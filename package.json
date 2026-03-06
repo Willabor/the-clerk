@@ -1,0 +1,42 @@
+{
+  "name": "the-clerk",
+  "version": "1.0.0",
+  "description": "Invisible, automated session documentation for Claude Code. Records every tool call, user message, and session — like a court clerk.",
+  "license": "GPL-3.0-only",
+  "author": "Wail Abor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Willabor/the-clerk"
+  },
+  "bugs": {
+    "url": "https://github.com/Willabor/the-clerk/issues"
+  },
+  "homepage": "https://github.com/Willabor/the-clerk#readme",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "hooks",
+    "session-recording",
+    "documentation",
+    "developer-tools",
+    "cli",
+    "logging",
+    "anthropic"
+  ],
+  "main": "install.js",
+  "scripts": {
+    "install-clerk": "node install.js",
+    "uninstall-clerk": "node uninstall.js",
+    "test": "node tests/test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "scripts/",
+    "install.js",
+    "uninstall.js",
+    "README.md",
+    "LICENSE"
+  ]
+}
