@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { redact } = require('./redact');
 
 async function main() {
   try {
@@ -29,14 +30,21 @@ async function main() {
     // Extract user message — it comes in input.prompt or input.user_prompt
     const userMessage = input.prompt || input.user_prompt || input.content || '';
 
+    // Full message, redacted. People paste credentials into chat — that is how a tunnel
+    // token once reached a real Clerk log — so the prompt stream is
+    // no safer than the command stream and gets the same treatment.
+    const { text, redactions } = redact(userMessage);
+
     const record = {
       type: 'user_prompt',
       ts: new Date().toISOString(),
       session: session_id,
-      message: userMessage.slice(0, 500)  // Truncate long messages
+      message: text
     };
+    if (redactions.length) record.redacted = [...new Set(redactions)];
 
     const logFile = path.join(clerkDir, 'observations.jsonl');
+    if (!fs.existsSync(logFile)) fs.writeFileSync(logFile, '', { mode: 0o600 });
     fs.appendFileSync(logFile, JSON.stringify(record) + '\n');
 
     process.stdout.write(JSON.stringify({ continue: true, suppressOutput: true }));
