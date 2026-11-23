@@ -1,6 +1,6 @@
 {
   "name": "the-clerk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Invisible, automated session documentation for Claude Code. Records every tool call, user message, and session — like a court clerk.",
   "license": "GPL-3.0-only",
   "author": "Wail Abor",
@@ -27,7 +27,9 @@
   "scripts": {
     "install-clerk": "node install.js",
     "uninstall-clerk": "node uninstall.js",
-    "test": "node tests/test.js"
+    "test": "node tests/test.js",
+    "search": "node scripts/search.js",
+    "harden": "node scripts/harden.js"
   },
   "engines": {
     "node": ">=18.0.0"

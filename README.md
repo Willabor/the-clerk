@@ -41,8 +41,8 @@ That's it. Start a new Claude Code session anywhere and you'll see:
 | Event | What's Captured |
 |-------|----------------|
 | **Session start** | Timestamp, project directory |
-| **Your messages** | First 500 characters of each prompt |
-| **Tool calls** | Tool name, concise summary, files touched, 300-char response preview |
+| **Your messages** | Each prompt in full, with credentials redacted |
+| **Tool calls** | Tool name, full summary, files touched, full response — credentials redacted |
 | **Session end** | Timestamp |
 
 ### What It Does NOT Record
@@ -74,7 +74,7 @@ All data appends to → {project}/.claude/clerk/observations.jsonl
 | Hook | Script | What It Does |
 |------|--------|-------------|
 | `SessionStart` | `session-start.js` | Creates clerk dir, auto-rotates large files, injects context |
-| `UserPromptSubmit` | `user-prompt.js` | Records your messages (truncated to 500 chars) |
+| `UserPromptSubmit` | `user-prompt.js` | Records your messages (redacted, not truncated) |
 | `PostToolUse` | `capture.js` | Records tool calls with smart summarization |
 | `Stop` | `session-end.js` | Writes session end marker |
 
@@ -115,7 +115,7 @@ One JSON record per line. Five record types:
 ```jsonl
 {"type":"session_start","ts":"2026-03-06T14:00:00.000Z","session":"abc123","cwd":"/home/user/project"}
 {"type":"user_prompt","ts":"2026-03-06T14:00:05.000Z","session":"abc123","message":"fix the login bug"}
-{"type":"observation","ts":"2026-03-06T14:00:10.000Z","session":"abc123","tool":"Edit","summary":"edit: src/auth.js | old: if (token)","files":["src/auth.js"],"response_preview":"..."}
+{"type":"observation","ts":"2026-03-06T14:00:10.000Z","session":"abc123","tool":"Edit","summary":"edit: src/auth.js | old: if (token)","files":["src/auth.js"],"response":"..."}
 {"type":"session_end","ts":"2026-03-06T14:30:00.000Z","session":"abc123"}
 {"type":"rotation_summary","ts":"2026-06-15T14:00:00.000Z","period":"Mar 6 — Jun 15","total_sessions":87,"total_observations":4200}
 ```
@@ -227,6 +227,37 @@ node uninstall.js
 ---
 
 ## Security
+
+### Redaction (1.1.0)
+
+Every command, tool response and prompt passes through `scripts/redact.js` before it is written.
+Credential-shaped text (GitHub, OpenAI, Stripe, Slack, AWS, Google keys, JWTs, bearer tokens,
+database URLs with passwords, private keys, `password=`/`token=`-style assignments) is replaced
+with a visible `[REDACTED:<kind>]` marker, and the record gets a `redacted` field listing what was
+removed. Nothing is dropped silently: a gap you can see is safer than a gap you can't.
+
+Records are no longer truncated (1.0.0 cut commands and responses short). A cut-off record reads as
+complete and is easy to trust wrongly; secrets are handled by redaction instead.
+
+Redaction matches known shapes. It is a safety net, not a guarantee: keep the log out of git (below).
+
+### File permissions
+
+New log files are created owner-only (0600) on macOS and Linux. To check or tighten existing logs:
+
+```bash
+npm run harden                 # report only
+npm run harden -- --apply      # change permissions, then re-check them
+```
+
+On Windows this uses `icacls` (a plain `chmod` does nothing there) and re-reads the result.
+
+### Searching the record
+
+```bash
+npm run search -- "deploy"             # free text / regex
+npm run search -- --tool Bash --since 2d
+```
 
 ### Git Exclusion
 

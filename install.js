@@ -10,7 +10,13 @@ const os = require('os');
 
 const CLERK_DIR = path.join(os.homedir(), '.claude', 'clerk', 'scripts');
 const SETTINGS_FILE = path.join(os.homedir(), '.claude', 'settings.json');
-const SCRIPTS = ['session-start.js', 'capture.js', 'user-prompt.js', 'session-end.js'];
+const SCRIPTS = [
+  'session-start.js', 'capture.js', 'user-prompt.js', 'session-end.js',
+  // capture.js and user-prompt.js require ./redact — without it every hook call fails
+  'redact.js',
+  // tools, run by hand: search the record; check / tighten log file permissions
+  'search.js', 'secure.js', 'harden.js'
+];
 const SRC_DIR = path.join(__dirname, 'scripts');
 
 function getHooksConfig() {
